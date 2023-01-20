@@ -4,10 +4,122 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.26/vue.min.js"></script>
+    <script src="./js/script.js" defer></script>
     <link rel="stylesheet" href="css/style.css" />
     <title>MW Shoes</title>
   </head>
-  <body>
+  <body id="wrapper">
+    <section class="cartOverlay" :style="{display:cartDisplay}">
+      <div class="cartList">
+        <button class="close-window cart-close" @click="cartDisplay = 'none'">
+          X
+        </button>
+        <h2 v-if="cart.length === 0">Cart is Empty</h2>
+        <div class="cart" v-else>
+          <h2>Cart <span>List</span></h2>
+          <div class="item" v-for="keranjang in cart">
+            <img :src="keranjang.img" :alt="keranjang.name" />
+            <div class="itemInfo">
+              <h2>{{keranjang.name}}</h2>
+              <p>Size: {{keranjang.size}}</p>
+              <p>Jumlah: {{keranjang.qty}}</p>
+              <p>Packaging: {{keranjang.packing}}</p>
+              <p v-if="keranjang.req.length > 0">Note: {{keranjang.req}}</p>
+              <p>Rp. {{convertIDR(keranjang.price)}},-</p>
+            </div>
+            <input
+              type="button"
+              value="hapus"
+              v-on:click="removeCartItem(keranjang.id, keranjang.qty, keranjang.price)"
+            />
+          </div>
+          <h2>Total: Rp. {{convertIDR(total)}},-</h2>
+          <input type="button" value="Buy" v-on:click="buyCart" />
+        </div>
+      </div>
+    </section>
+    <section class="overlay" :style="{display:detailDisplay}">
+      <div class="modal">
+        <button class="close-window" @click="detailDisplay = 'none'">X</button>
+        <h2>Detail Produk</h2>
+        <div class="container-detail">
+          <img :src="details.img" :alt="details.name" />
+          <div class="">
+            <div class="text-detail">
+              <h3 class="orange title-detail">{{details.name}}</h3>
+              <p class="price">Rp. {{convertIDR(details.price)}}</p>
+              <h3 class="size-text">Size Chart</h3>
+              <select class="size" id="size" v-on:change="changeSize($event)">
+                <option value="Pilih">Pilih</option>
+                <option
+                  v-for="ukuran in sizeList"
+                  :value="ukuran"
+                  :selected="ukuran === size"
+                >
+                  {{ukuran}}
+                </option>
+              </select>
+
+              <h3>Quantity</h3>
+              <div class="container">
+                <input type="button" value="-" v-on:click="decQty" />
+                <input type="number" :value="qty" />
+                <input type="button" value="+" v-on:click="incQty" />
+              </div>
+              <p>If you can not find your sizes, please kindly input here!</p>
+              <label>Special Request</label>
+              <input
+                :defaultValue="req"
+                type="text"
+                placeholder="e.g ...."
+                class="size"
+                v-on:change="addReq($event)"
+              />
+
+              <h3>Packaging</h3>
+              <input
+                type="radio"
+                name="pack"
+                v-on:click="changePacking('Normal')"
+                checked
+              />
+              <label>Normal</label>
+              <input
+                type="radio"
+                name="pack"
+                v-on:click="changePacking('Bubble Wrap')"
+              />
+              <label>Bubble Wrap</label>
+              <input
+                type="radio"
+                name="pack"
+                v-on:click="changePacking('Kotak Kayu')"
+              />
+              <label>Kotak Kayu</label>
+            </div>
+
+            <hr />
+
+            <div class="container-button">
+              <input
+                type="button"
+                value="Add to Cart"
+                class="buy-btn"
+                v-on:click="addCart"
+              />
+              <input
+                type="button"
+                value="Buy Now!"
+                class="buy-btn"
+                v-on:click="buyDetail"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <header>
       <nav>
         <h1>MW <span>Shoes</span></h1>
@@ -31,87 +143,25 @@
             </div>
           </div>
           <a href="#">Sale</a>
-          <button class="btn-login">Login</button>
+          <button @click="cartDisplay = 'flex'" class="btn-login">
+            Cart ({{totalQty}})
+          </button>
         </div>
       </nav>
-      <div class="hero">
-        <div class="hero-text">
-          <h2>Keep Warn in Style</h2>
-          <p><b>Don't Get Mad, Get New Shoes</b></p>
-        </div>
-      </div>
     </header>
     <main>
       <div class="container-card">
-        <div class="card">
-          <img src="images/new-sneakers.jpg" alt="sneaker" />
-          <a href="detail.html">Details</a>
-        </div>
-        <div class="card">
-          <img
-            src="images/brown-shoe-isolated-white-background-studio.jpg"
-            alt="sneaker"
-          />
-          <a href="detail.html">Details</a>
-        </div>
-        <div class="card">
-          <img src="images/leather-boots.jpg" alt="sneaker" />
-          <a href="detail.html">Details</a>
-        </div>
-      </div>
-
-      <div class="container-hatarika">
-        <img
-          class="img-right"
-          src="images/basic-white-sneakers-unisex-streetwear-fashion-shoot.jpg"
-          alt=""
-        />
-        <div class="hatarika-text">
-          <h2>What is Hatarika?</h2>
-          <p>
-            Hatarika.com is the official website for online shopping if you want
-            to buy products from Hatarika. Hatarika provides a complete
-            collection of the best shoes made by the Indonesian children.
-            Complete your overall appearance with the best Hatarika shoes.
-            Hatarika provides many choices ranging from slip on or sneakers that
-            are suitable for a casual atmosphere. For formal conditions,
-            Hatarika provides a variety of choices ranging from the best boots
-            to leather shoes.
-          </p>
-        </div>
-      </div>
-
-      <div class="container-hatarika">
-        <img
-          class="img-left"
-          src="images/running-treadmill-gym.jpg"
-          alt="Testimoni"
-        />
-        <div class="hatarika-text">
-          <h2>What will you get in here?</h2>
-          <p>
-            Shopping shoes via Hatarika.com is easier with several features,
-            like Delivery Guarantee, Return and refund for problem products,
-            Customer Service (09.30-22.00), easy payments via your favorite
-            E-Wallet
-          </p>
-        </div>
-      </div>
-
-      <div class="container-testimoni">
-        <img src="images/male-testimoni.jpg" alt="Testimoni" />
-        <div class="testimoni-text">
-          <h3>Testimoni</h3>
-          <p>
-            "Pantofel yang saya beli di Haratika sangat bagus. Bahannya premium
-            dan jahitannya juga sangat rapi. Pengamasannya sangat cepat dan
-            aman. Saya menunggu untuk koleksi Sneakers lainnya!"
-          </p>
-          <p>Alex Waygon, <span>Pegawai Kantoran</span></p>
+        <div class="card" v-for="shoe in shoes">
+          <div class="img-card">
+            <img :src="shoe.img" alt="" />
+            <button @click="changeDetails(shoe.id)">Details</button>
+          </div>
+          <h3>{{shoe.name}}</h3>
+          <h3>{{shoe.priceThrough}}</h3>
+          <h3>Rp. {{convertIDR(shoe.price)}},-</h3>
         </div>
       </div>
     </main>
-
     <footer>
       <div class="flex-footer">
         <ul class="section-footer">
@@ -148,7 +198,5 @@
       </div>
       <p>Copyright © 2021 Hatarika. All Rights Reserved.</p>
     </footer>
-
-    <script src="js/main.js"></script>
   </body>
 </html>
